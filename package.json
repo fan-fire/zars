@@ -1,0 +1,30 @@
+{
+  "name": "zarp",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "npx hardhat test",
+    "testWithGas": "REPORT_GAS=true npx hardhat test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fan-fire/zarp.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/fan-fire/zarp/issues"
+  },
+  "homepage": "https://github.com/fan-fire/zarp#readme",
+  "devDependencies": {
+    "@nomicfoundation/hardhat-chai-matchers": "^1.0.4",
+    "@nomicfoundation/hardhat-toolbox": "^2.0.0",
+    "hardhat": "^2.12.2"
+  },
+  "dependencies": {
+    "@openzeppelin/contracts": "^4.7.3",
+    "@openzeppelin/contracts-upgradeable": "^4.7.3"
+  }
+}

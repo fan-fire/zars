@@ -16,7 +16,8 @@
   "eslint.packageManager": "npm",
   "editor.formatOnSave": true,
   "[typescript]": {
-    "editor.formatOnSave": false
+    "editor.formatOnSave": false,
+    "editor.defaultFormatter": "vscode.typescript-language-features"
   },
   "eslint.validate": ["typescript"],
   "eslint.alwaysShowStatus": true,
@@ -26,4 +27,7 @@
     "source.fixAll.eslint": true
   },
   "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "[solidity]": {
+    "editor.defaultFormatter": "NomicFoundation.hardhat-solidity"
+  },
 }

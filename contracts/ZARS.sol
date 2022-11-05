@@ -217,6 +217,45 @@ contract ZARS is ERC20, ERC20Burnable, AccessControl, Pausable {
     }
 
     /**
+     * @dev See {ERC20-_transfer}.
+     *
+     * The ability to transfor to mutiple recipients.
+     *
+     * Requirements:
+     * - contract must not be paused.
+     * - sender must not be frozen.
+     * - recipients must not be frozen.
+     * - recipients cannot be this contract
+     * - recipients cannot be the zero address
+     * - amounts must be greater than zero.
+     */
+    function multiTransfer(
+        address[] memory recipients,
+        uint256[] memory amounts
+    ) public whenNotPaused whenNotFrozen(_msgSender()) returns (bool) {
+        require(
+            recipients.length == amounts.length,
+            "ZARS: recipients and amounts length mismatch"
+        );
+        for (uint256 i = 0; i < recipients.length; i++) {
+            require(
+                recipients[i] != address(0),
+                "ZARS: Cannot transfer to zero address"
+            );
+            require(
+                recipients[i] != address(this),
+                "ZARS: Cannot transfer to contract address"
+            );
+            require(
+                !isFrozen(recipients[i]),
+                "ZARS: Cannot transfer to frozen address"
+            );
+            _transfer(_msgSender(), recipients[i], amounts[i]);
+        }
+        return true;
+    }
+
+    /**
      * @dev See {Pausable-_pause}.
      *
      * Requirements:

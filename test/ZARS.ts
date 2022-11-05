@@ -221,7 +221,7 @@ describe("ZARS", () => {
         expect(await zars.balanceOf(acc2.address)).to.equal(zarToEth("1000"));
       });
 
-      it("Evaluate GAS costs for 1000 transactions of differnt sizes between acc1, acc2 and acc3", async () => {
+      it("Evaluate GAS costs for 10 transactions of differnt sizes between acc1, acc2 and acc3", async () => {
         const { zars, owner, acc1, acc2, acc3 } = await loadFixture(deployZarsWithMintedTokens);
 
         // confirm acc1 and acc2 aren't frozen
@@ -234,7 +234,32 @@ describe("ZARS", () => {
           await zars.connect(acc2).transfer(acc3.address, amount);
           await zars.connect(acc3).transfer(acc1.address, amount);
         }
+      });
 
+      it("Evaluate GAs cost for 10 multi transactions of differnt sizes between acc1, acc2 and acc3", async () => {
+        const { zars, owner, acc1, acc2, acc3 } = await loadFixture(deployZarsWithMintedTokens);
+
+        // confirm acc1 and acc2 aren't frozen
+        expect(await zars.isFrozen(acc1.address)).to.be.false;
+        expect(await zars.isFrozen(acc2.address)).to.be.false;
+        expect(await zars.isFrozen(acc3.address)).to.be.false;
+
+
+        let acc2Total = zarToEth("1000");
+        let acc3Total = zarToEth("1000");
+        for (let i = 0; i < 10; i++) {
+          const acc2Amount = Math.floor(Math.random() * 10);
+          const acc3Amount = Math.floor(Math.random() * 10);
+
+          acc2Total = acc2Total.add(acc2Amount);
+          acc3Total = acc3Total.add(acc3Amount);
+
+
+          await zars.connect(acc1).multiTransfer([acc2.address, acc3.address], [acc2Amount, acc3Amount]);
+        }
+
+        expect(await zars.balanceOf(acc2.address)).to.equal(acc2Total);
+        expect(await zars.balanceOf(acc3.address)).to.equal(acc3Total);
 
       });
     });

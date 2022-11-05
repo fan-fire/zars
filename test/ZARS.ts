@@ -255,7 +255,10 @@ describe("ZARS", () => {
           acc3Total = acc3Total.add(acc3Amount);
 
 
-          await zars.connect(acc1).multiTransfer([acc2.address, acc3.address], [acc2Amount, acc3Amount]);
+          await zars.connect(acc1).multiTransfer(
+            [acc2.address, acc3.address],
+            [acc2Amount, acc3Amount]
+          );
         }
 
         expect(await zars.balanceOf(acc2.address)).to.equal(acc2Total);

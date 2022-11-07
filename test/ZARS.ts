@@ -663,7 +663,7 @@ describe("ZARS", () => {
     });
   });
 
-  describe.only("Government", () => {
+  describe("Government", () => {
     describe("Freezing ", () => {
       it("Should be able to transfer between 2 accounts that aren't frozen", async () => {
         const { zars, acc1, acc2 } = await loadFixture(deployFullZars);
@@ -919,7 +919,7 @@ describe("ZARS", () => {
 
         // transfer 100 ZARS from src to dst
         await expect(zars.connect(src)
-          .multiTransfer([acc1.address, dst.address], [zarToEth("100"), zarToEth("100")]))
+          .multiTransfer([acc3.address, dst.address], [zarToEth("100"), zarToEth("100")]))
           .to
           .be
           .revertedWith("ZARS: Account is frozen");
@@ -989,8 +989,106 @@ describe("ZARS", () => {
 
   describe("Transacting", () => {
     describe("Multitransfer", () => {
-      //race conditions if the same account is used in src and dst
+
+      // TODO: test multiTransfer with 0 addresses
+      // TODO: test multiTransfer with 0 amounts
+      // TODO: test multiTransfer with 0 addresses and 0 amounts
+      // TODO: test multiTransfer with 1 address
+      // TODO: test multiTransfer with 1 amount
+      // TODO: test multiTransfer with mismatched addresses and amounts
+      // TODO: test ERC20 allowance works with multiTransfer
+
+      it("Should be able to transfer to multiple accounts", async () => {
+        const { zars, acc1, acc2, acc3 } = await loadFixture(deployFullZars);
+
+        const src = acc1;
+
+        // confirm src and dst aren't frozen
+        expect(await zars.isFrozen(src.address)).to.be.false;
+        expect(await zars.isFrozen(acc2.address)).to.be.false;
+        expect(await zars.isFrozen(acc3.address)).to.be.false;
+
+        // confirm src has 1000 ZARS
+        expect(await zars.balanceOf(src.address)).to.equal(zarToEth("1000"));
+        // confirm acc2 has 1000 ZARS
+        expect(await zars.balanceOf(acc2.address)).to.equal(zarToEth("1000"));
+        // confirm acc3 has 1000 ZARS
+        expect(await zars.balanceOf(acc3.address)).to.equal(zarToEth("1000"));
+
+        // transfer 100 ZARS from src to acc2 and acc3 respectively
+        await zars.connect(src)
+          .multiTransfer([acc2.address, acc3.address], [zarToEth("100"), zarToEth("100")]);
+
+        // confirm src has 900 ZARS
+        expect(await zars.balanceOf(src.address)).to.equal(zarToEth("800"));
+
+        // confirm acc2 has 1100 ZARS
+        expect(await zars.balanceOf(acc2.address)).to.equal(zarToEth("1100"));
+
+        // confirm acc3 has 1100 ZARS
+        expect(await zars.balanceOf(acc3.address)).to.equal(zarToEth("1100"));
+      });
+
+      it("Should be able to transfer to the same account as destination account", async () => {
+        const { zars, acc1, acc2 } = await loadFixture(deployFullZars);
+
+        const src = acc1;
+        const dst = acc2;
+
+        // confirm src and dst aren't frozen
+        expect(await zars.isFrozen(src.address)).to.be.false;
+        expect(await zars.isFrozen(dst.address)).to.be.false;
+
+        // confirm src has 1000 ZARS
+        expect(await zars.balanceOf(src.address)).to.equal(zarToEth("1000"));
+
+        // confirm dst has 1000 ZARS
+        expect(await zars.balanceOf(dst.address)).to.equal(zarToEth("1000"));
+
+        await zars
+        .connect(src)
+          .multiTransfer([dst.address, dst.address], [zarToEth("100"), zarToEth("100")]);
+
+        // confirm src has 800 ZARS
+        expect(await zars.balanceOf(src.address)).to.equal(zarToEth("800"));
+
+        // confirm dst has 1200 ZARS
+        expect(await zars.balanceOf(dst.address)).to.equal(zarToEth("1200"));
+        
+      });
+
+      it("Shouldn't be able to transfer to the same destination account if src funds run out after first transfer", async () => {
+        const { zars, acc1, acc2 } = await loadFixture(deployFullZars);
+
+        const src = acc1;
+        const dst = acc2;
+
+        // confirm src and dst aren't frozen
+        expect(await zars.isFrozen(src.address)).to.be.false;
+        expect(await zars.isFrozen(dst.address)).to.be.false;
+
+        // confirm src has 1000 ZARS
+        expect(await zars.balanceOf(src.address)).to.equal(zarToEth("1000"));
+
+        // confirm dst has 1000 ZARS
+        expect(await zars.balanceOf(dst.address)).to.equal(zarToEth("1000"));
+
+        await expect(zars
+          .connect(src)
+          .multiTransfer([dst.address, dst.address], [zarToEth("600"), zarToEth("600")]))
+          .to
+          .be
+          .revertedWith("ERC20: transfer amount exceeds balance");
+
+        // confirm src has 1000 ZARS
+        expect(await zars.balanceOf(src.address)).to.equal(zarToEth("1000"));
+
+        // confirm dst has 1000 ZARS
+        expect(await zars.balanceOf(dst.address)).to.equal(zarToEth("1000"));
+      });
+
     });
+    
 
   });
 

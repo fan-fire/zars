@@ -100,7 +100,6 @@ contract ZARS is ERC20, ERC20Burnable, AccessControl, Pausable {
      * - contract must not be paused.
      * - caller must have the GOVERN_ROLE.
      * - account must not be frozen.
-     * - account cannot be the zero address.
      * - account cannot be the contract address.
      * - account must have a balance greater than zero.
      *
@@ -112,7 +111,6 @@ contract ZARS is ERC20, ERC20Burnable, AccessControl, Pausable {
         onlyRole(GOVERN_ROLE)
         whenFrozen(account)
     {
-        require(account != address(0), "ZARS: Cannot seize zero address");
         require(account != address(this), "ZARS: cannot clean to self");
         require(balanceOf(account) > 0, "ZARS: cannot clean empty account");
         uint256 balance = balanceOf(account);
@@ -206,9 +204,7 @@ contract ZARS is ERC20, ERC20Burnable, AccessControl, Pausable {
      * - contract must not be paused.
      * - sender must not be frozen.
      * - recipients must not be frozen.
-     * - recipients cannot be this contract
-     * - recipients cannot be the zero address
-     * - amounts must be greater than zero.
+     * - recipients must not be the sender.
      */
     function multiTransfer(
         address[] memory recipients,
@@ -220,12 +216,8 @@ contract ZARS is ERC20, ERC20Burnable, AccessControl, Pausable {
         );
         for (uint256 i = 0; i < recipients.length; i++) {
             require(
-                recipients[i] != address(0),
-                "ZARS: Cannot transfer to zero address"
-            );
-            require(
-                recipients[i] != address(this),
-                "ZARS: Cannot transfer to contract address"
+                recipients[i] != _msgSender(),
+                "ZARS: Recipient cannot be the sender"
             );
             require(!isFrozen(recipients[i]), "ZARS: Account is frozen");
             _transfer(_msgSender(), recipients[i], amounts[i]);

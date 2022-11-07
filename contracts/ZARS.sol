@@ -164,35 +164,15 @@ contract ZARS is ERC20, ERC20Burnable, AccessControl, Pausable {
      *
      * Requirements:
      * - contract must not be paused.
-     * - caller must not be frozen.
      * - caller must have the `BURNER_ROLE`.
      */
     function burn(uint256 amount)
         public
         override
         whenNotPaused
-        whenNotFrozen(_msgSender())
         onlyRole(BURNER_ROLE)
     {
         super.burn(amount);
-    }
-
-    /**
-     * @dev See {ERC20-_burnFrom}.
-     *
-     * Requirements:
-     * - contract must not be paused.
-     * - account must not be frozen.
-     * - caller must have the `BURNER_ROLE`.
-     */
-    function burnFrom(address account, uint256 amount)
-        public
-        override
-        whenNotPaused
-        whenNotFrozen(account)
-        onlyRole(BURNER_ROLE)
-    {
-        super.burnFrom(account, amount);
     }
 
     /**

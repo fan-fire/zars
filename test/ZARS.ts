@@ -2,9 +2,13 @@ import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
 import { expect } from "chai";
 import { ethers } from "hardhat";
 import "@nomicfoundation/hardhat-chai-matchers";
+import { Contract } from "hardhat/internal/hardhat-network/stack-traces/model";
 
 const weiToEth = (wei: string) => ethers.utils.formatEther(wei);
 const zarToEth = (decimal: string) => ethers.utils.parseEther(decimal);
+
+const accessControlMessage = (role: string, account: string) =>
+  `AccessControl: account ${account.toLowerCase()} is missing role ${role.toLowerCase()}`;
 
 describe("ZARS", () => {
   // We define a fixture to reuse the same setup in every test.
@@ -115,20 +119,195 @@ describe("ZARS", () => {
         expect(await zars.hasRole(await zars.MINTER_ROLE(), notOwner.address)).to.be.true;
       });
 
-      //       MINTER_ROLE
-      // BURNER_ROLE
-      // GOVERN_ROLE
-      // PAUSER_ROLE
+      it("Should be able to grant BURNER_ROLE as DEFAULT_ADMIN_ROLE", async () => {
+        // confirm owner has DEFAULT_ADMIN_ROLE
+        const { zars, owner, notOwner } = await loadFixture(deployZars);
+        expect(await zars.hasRole(await zars.DEFAULT_ADMIN_ROLE(), owner.address)).to.be.true;
+
+        // confirm notOwner doens't have BURNER_ROLE
+        expect(await zars.hasRole(await zars.BURNER_ROLE(), notOwner.address)).to.be.false;
+
+        // grant BURNER_ROLE to notOwner
+        await zars.grantRole(await zars.BURNER_ROLE(), notOwner.address);
+
+        // confirm notOwner has BURNER_ROLE
+        expect(await zars.hasRole(await zars.BURNER_ROLE(), notOwner.address)).to.be.true;
+      });
+
+      it("Should be able to grant GOVERN_ROLE as DEFAULT_ADMIN_ROLE", async () => {
+        // confirm owner has DEFAULT_ADMIN_ROLE
+        const { zars, owner, notOwner } = await loadFixture(deployZars);
+        expect(await zars.hasRole(await zars.DEFAULT_ADMIN_ROLE(), owner.address)).to.be.true;
+
+        // confirm notOwner doens't have GOVERN_ROLE
+        expect(await zars.hasRole(await zars.GOVERN_ROLE(), notOwner.address)).to.be.false;
+
+        // grant GOVERN_ROLE to notOwner
+        await zars.grantRole(await zars.GOVERN_ROLE(), notOwner.address);
+
+        // confirm notOwner has GOVERN_ROLE
+        expect(await zars.hasRole(await zars.GOVERN_ROLE(), notOwner.address)).to.be.true;
+      });
+
+      it("Should be able to grant PAUSER_ROLE as DEFAULT_ADMIN_ROLE", async () => {
+        // confirm owner has DEFAULT_ADMIN_ROLE
+        const { zars, owner, notOwner } = await loadFixture(deployZars);
+        expect(await zars.hasRole(await zars.DEFAULT_ADMIN_ROLE(), owner.address)).to.be.true;
+
+        // confirm notOwner doens't have PAUSER_ROLE
+        expect(await zars.hasRole(await zars.PAUSER_ROLE(), notOwner.address)).to.be.false;
+
+        // grant PAUSER_ROLE to notOwner
+        await zars.grantRole(await zars.PAUSER_ROLE(), notOwner.address);
+
+        // confirm notOwner has PAUSER_ROLE
+        expect(await zars.hasRole(await zars.PAUSER_ROLE(), notOwner.address)).to.be.true;
+      });
 
     });
 
     describe("Revoking", () => {
+      it("Should be able to revoke MINTER_ROLE as DEFAULT_ADMIN_ROLE", async () => {
+        // confirm owner has DEFAULT_ADMIN_ROLE
+        const { zars, owner, notOwner } = await loadFixture(deployZars);
+        expect(await zars.hasRole(await zars.DEFAULT_ADMIN_ROLE(), owner.address)).to.be.true;
+
+        // confirm notOwner doens't have MINTER_ROLE
+        expect(await zars.hasRole(await zars.MINTER_ROLE(), notOwner.address)).to.be.false;
+
+        // grant MINTER_ROLE to notOwner
+        await zars.grantRole(await zars.MINTER_ROLE(), notOwner.address);
+
+        // confirm notOwner has MINTER_ROLE
+        expect(await zars.hasRole(await zars.MINTER_ROLE(), notOwner.address)).to.be.true;
+
+        // revoke MINTER_ROLE from notOwner
+        await zars.revokeRole(await zars.MINTER_ROLE(), notOwner.address);
+
+        // confirm notOwner doesn't have MINTER_ROLE
+        expect(await zars.hasRole(await zars.MINTER_ROLE(), notOwner.address)).to.be.false;
+      });
+
+      it("Should be able to revoke BURNER_ROLE as DEFAULT_ADMIN_ROLE", async () => {
+        // confirm owner has DEFAULT_ADMIN_ROLE
+        const { zars, owner, notOwner } = await loadFixture(deployZars);
+        expect(await zars.hasRole(await zars.DEFAULT_ADMIN_ROLE(), owner.address)).to.be.true;
+
+        // confirm notOwner doens't have BURNER_ROLE
+        expect(await zars.hasRole(await zars.BURNER_ROLE(), notOwner.address)).to.be.false;
+
+        // grant BURNER_ROLE to notOwner
+        await zars.grantRole(await zars.BURNER_ROLE(), notOwner.address);
+
+        // confirm notOwner has BURNER_ROLE
+        expect(await zars.hasRole(await zars.BURNER_ROLE(), notOwner.address)).to.be.true;
+
+        // revoke BURNER_ROLE from notOwner
+        await zars.revokeRole(await zars.BURNER_ROLE(), notOwner.address);
+
+        // confirm notOwner doesn't have BURNER_ROLE
+        expect(await zars.hasRole(await zars.BURNER_ROLE(), notOwner.address)).to.be.false;
+      });
+
+      it("Should be able to revoke GOVERN_ROLE as DEFAULT_ADMIN_ROLE", async () => {
+        // confirm owner has DEFAULT_ADMIN_ROLE
+        const { zars, owner, notOwner } = await loadFixture(deployZars);
+        expect(await zars.hasRole(await zars.DEFAULT_ADMIN_ROLE(), owner.address)).to.be.true;
+
+        // confirm notOwner doens't have GOVERN_ROLE
+        expect(await zars.hasRole(await zars.GOVERN_ROLE(), notOwner.address)).to.be.false;
+
+        // grant GOVERN_ROLE to notOwner
+        await zars.grantRole(await zars.GOVERN_ROLE(), notOwner.address);
+
+        // confirm notOwner has GOVERN_ROLE
+        expect(await zars.hasRole(await zars.GOVERN_ROLE(), notOwner.address)).to.be.true;
+
+        // revoke GOVERN_ROLE from notOwner
+        await zars.revokeRole(await zars.GOVERN_ROLE(), notOwner.address);
+
+        // confirm notOwner doesn't have GOVERN_ROLE
+        expect(await zars.hasRole(await zars.GOVERN_ROLE(), notOwner.address)).to.be.false;
+      });
+
+      it("Should be able to revoke PAUSER_ROLE as DEFAULT_ADMIN_ROLE", async () => {
+        // confirm owner has DEFAULT_ADMIN_ROLE
+        const { zars, owner, notOwner } = await loadFixture(deployZars);
+        expect(await zars.hasRole(await zars.DEFAULT_ADMIN_ROLE(), owner.address)).to.be.true;
+
+        // confirm notOwner doens't have PAUSER_ROLE
+        expect(await zars.hasRole(await zars.PAUSER_ROLE(), notOwner.address)).to.be.false;
+
+        // grant PAUSER_ROLE to notOwner
+        await zars.grantRole(await zars.PAUSER_ROLE(), notOwner.address);
+
+        // confirm notOwner has PAUSER_ROLE
+        expect(await zars.hasRole(await zars.PAUSER_ROLE(), notOwner.address)).to.be.true;
+
+        // revoke PAUSER_ROLE from notOwner
+        await zars.revokeRole(await zars.PAUSER_ROLE(), notOwner.address);
+
+        // confirm notOwner doesn't have PAUSER_ROLE
+        expect(await zars.hasRole(await zars.PAUSER_ROLE(), notOwner.address)).to.be.false;
+      });
+
 
     });
 
     describe("Methods", () => {
+      it("Should be able to mint ZARs as MINTER_ROLE", async () => {
+        // confirm owner has DEFAULT_ADMIN_ROLE
+        const { zars, owner, minter } = await loadFixture(deployZars);
+        expect(await zars.hasRole(await zars.DEFAULT_ADMIN_ROLE(), owner.address)).to.be.true;
+
+        // confirm minter doens't have MINTER_ROLE
+        expect(await zars.hasRole(await zars.MINTER_ROLE(), minter.address)).to.be.false;
+
+        // grant MINTER_ROLE to minter
+        await zars.grantRole(await zars.MINTER_ROLE(), minter.address);
+
+        // confirm minter has MINTER_ROLE
+        expect(await zars.hasRole(await zars.MINTER_ROLE(), minter.address)).to.be.true;
+
+        // mint 100 ZARs to minter
+        await zars.connect(minter).mint(minter.address, 100);
+
+        // confirm minter has 100 ZARs
+        expect(await zars.balanceOf(minter.address)).to.equal(100);
+
+      });
+
+      it("Should be able to `burn` ZARs as BURNER_ROLE", async () => {
+        // confirm owner has DEFAULT_ADMIN_ROLE
+        const { zars, owner, burner } = await loadFixture(deployZars);
+        expect(await zars.hasRole(await zars.DEFAULT_ADMIN_ROLE(), owner.address)).to.be.true;
+
+        // confirm burner doens't have BURNER_ROLE
+        expect(await zars.hasRole(await zars.BURNER_ROLE(), burner.address)).to.be.false;
+
+        // grant BURNER_ROLE to burner
+        await zars.grantRole(await zars.BURNER_ROLE(), burner.address);
+
+        // confirm burner has BURNER_ROLE
+        expect(await zars.hasRole(await zars.BURNER_ROLE(), burner.address)).to.be.true;
+
+        await zars.grantRole(await zars.MINTER_ROLE(), burner.address);
+
+        // mint 100 ZARs to burner
+        await zars.connect(burner).mint(burner.address, 100);
+
+        // confirm burner has 100 ZARs
+        expect(await zars.balanceOf(burner.address)).to.equal(100);
+
+        // burn 100 ZARs from burner
+        await zars.connect(burner).burn(100);
+
+        // confirm burner has 0 ZARs
+        expect(await zars.balanceOf(burner.address)).to.equal(0);
+      });
 
     });
+
   });
 
   describe("Transacting", () => {
@@ -151,6 +330,24 @@ describe("ZARS", () => {
 
         expect(await zars.balanceOf(owner.address)).to.equal(amount);
       })
+
+      it("Shouldn't be able to mint with only DEFAULT_ADMIN_ROLE", async () => {
+        const { zars, owner } = await loadFixture(deployZars);
+
+        // confirm owner has DEFAULT_ADMIN_ROLE
+        expect(await zars.hasRole(await zars.DEFAULT_ADMIN_ROLE(), owner.address)).to.be.true;
+
+        // confirm owner has 0 balance
+        expect(await zars.balanceOf(owner.address)).to.equal(0);
+
+        // mint 1000 ZARS to owner
+        const amount = zarToEth("1000");
+        await expect(zars.connect(owner).mint(owner.address, amount))
+          .to.be
+          .revertedWith(accessControlMessage(await zars.MINTER_ROLE(), owner.address));
+
+        expect(await zars.balanceOf(owner.address)).to.equal(0);
+      });
 
     });
 

@@ -153,6 +153,7 @@ contract ZARS is ERC20, ERC20Burnable, AccessControl, Pausable {
      */
     function mint(address account, uint256 amount)
         public
+        whenNotPaused
         onlyRole(MINTER_ROLE)
         whenNotFrozen(account)
     {
@@ -226,10 +227,7 @@ contract ZARS is ERC20, ERC20Burnable, AccessControl, Pausable {
                 recipients[i] != address(this),
                 "ZARS: Cannot transfer to contract address"
             );
-            require(
-                !isFrozen(recipients[i]),
-                "ZARS: Cannot transfer to frozen address"
-            );
+            require(!isFrozen(recipients[i]), "ZARS: Account is frozen");
             _transfer(_msgSender(), recipients[i], amounts[i]);
         }
         return true;

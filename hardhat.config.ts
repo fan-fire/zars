@@ -8,7 +8,7 @@ const config: HardhatUserConfig = {
     currency: "ZAR",
     gasPrice: 100,
     noColors: false,
-    coinmarketcap: 'f62b19fc-bfad-4e1f-bfe4-8bede182f845',
+    coinmarketcap: process.env.COINMARKETCAP_API_KEY,
     token: 'MATIC',
     gasPriceApi: 'https://api.polygonscan.com/api?module=proxy&action=eth_gasPrice',
   },

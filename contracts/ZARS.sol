@@ -5,8 +5,9 @@ import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/security/Pausable.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
+import "./IERC20Z.sol";
 
-contract ZARS is ERC20, ERC20Burnable, AccessControl, Pausable {
+contract ZARS is ERC20, ERC20Burnable, AccessControl, Pausable, IERC20Z {
     mapping(address => bool) private _frozen;
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
     bytes32 public constant BURNER_ROLE = keccak256("BURNER_ROLE");
@@ -23,7 +24,7 @@ contract ZARS is ERC20, ERC20Burnable, AccessControl, Pausable {
         _;
     }
 
-    function isFrozen(address account) public view returns (bool) {
+    function isFrozen(address account) public view override returns (bool) {
         return _frozen[account];
     }
 
@@ -39,11 +40,6 @@ contract ZARS is ERC20, ERC20Burnable, AccessControl, Pausable {
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
     }
 
-    event AddressFrozen(address indexed account);
-    event AddressUnfrozen(address indexed account);
-    event AddressSeized(address indexed account);
-    event FundsWithdrew(address indexed account, uint256 amount);
-
     /**
      * @dev Freezes a specific account.
      *
@@ -58,12 +54,15 @@ contract ZARS is ERC20, ERC20Burnable, AccessControl, Pausable {
      */
     function freeze(address account)
         public
+        override
         whenNotPaused
         onlyRole(GOVERN_ROLE)
         whenNotFrozen(account)
+        returns (bool)
     {
         _frozen[account] = true;
         emit AddressFrozen(account);
+        return true;
     }
 
     /**
@@ -77,16 +76,19 @@ contract ZARS is ERC20, ERC20Burnable, AccessControl, Pausable {
      * - the account must be frozen.
      *
      *
-     * Emits Unfreeze event.
+     * Emits AddressUnfrozen event.
      */
     function unfreeze(address account)
         public
+        override
         whenNotPaused
         onlyRole(GOVERN_ROLE)
         whenFrozen(account)
+        returns (bool)
     {
         _frozen[account] = false;
         emit AddressUnfrozen(account);
+        return true;
     }
 
     /**
@@ -107,15 +109,18 @@ contract ZARS is ERC20, ERC20Burnable, AccessControl, Pausable {
      */
     function seize(address account)
         public
+        override
         whenNotPaused
         onlyRole(GOVERN_ROLE)
         whenFrozen(account)
+        returns (bool)
     {
         require(account != address(this), "ZARS: cannot clean to self");
         require(balanceOf(account) > 0, "ZARS: cannot clean empty account");
         uint256 balance = balanceOf(account);
         _transfer(account, address(this), balance);
         emit AddressSeized(account);
+        return true;
     }
 
     /**
@@ -129,16 +134,19 @@ contract ZARS is ERC20, ERC20Burnable, AccessControl, Pausable {
      * - contract must have enough ZARS to withdraw.
      * - caller must have the `GOVERN_ROLE`.
      *
-     * Emits Withdraw event.
+     * Emits FundsWithdrew event.
      */
     function withdraw(uint256 amount)
         public
+        override
         whenNotPaused
         onlyRole(GOVERN_ROLE)
+        returns (bool)
     {
         require(amount <= balanceOf(address(this)), "ZARS: not enough funds");
         _transfer(address(this), _msgSender(), amount);
         emit FundsWithdrew(_msgSender(), amount);
+        return true;
     }
 
     /**
@@ -209,7 +217,7 @@ contract ZARS is ERC20, ERC20Burnable, AccessControl, Pausable {
     function multiTransfer(
         address[] memory recipients,
         uint256[] memory amounts
-    ) public whenNotPaused whenNotFrozen(_msgSender()) returns (bool) {
+    ) public override whenNotPaused whenNotFrozen(_msgSender()) returns (bool) {
         require(
             recipients.length == amounts.length,
             "ZARS: recipients and amounts length mismatch"
@@ -251,5 +259,18 @@ contract ZARS is ERC20, ERC20Burnable, AccessControl, Pausable {
         uint256 amount
     ) internal override whenNotPaused {
         super._beforeTokenTransfer(from, to, amount);
+    }
+
+    function supportsInterface(bytes4 interfaceId)
+        public
+        view
+        virtual
+        override
+        returns (bool)
+    {
+        return
+            super.supportsInterface(interfaceId) ||
+            interfaceId == type(IERC20).interfaceId ||
+            interfaceId == type(IERC20Z).interfaceId;
     }
 }

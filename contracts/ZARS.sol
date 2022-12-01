@@ -4,10 +4,9 @@ pragma solidity ^0.8.7;
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/security/Pausable.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
 import "./IERC20Z.sol";
 
-contract ZARS is ERC20, ERC20Burnable, AccessControl, Pausable, IERC20Z {
+contract ZARS is ERC20, AccessControl, Pausable, IERC20Z {
     mapping(address => bool) private _frozen;
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
     bytes32 public constant BURNER_ROLE = keccak256("BURNER_ROLE");
@@ -173,13 +172,8 @@ contract ZARS is ERC20, ERC20Burnable, AccessControl, Pausable, IERC20Z {
      * - contract must not be paused.
      * - caller must have the `BURNER_ROLE`.
      */
-    function burn(uint256 amount)
-        public
-        override
-        whenNotPaused
-        onlyRole(BURNER_ROLE)
-    {
-        super.burn(amount);
+    function burn(uint256 amount) public whenNotPaused onlyRole(BURNER_ROLE) {
+        _burn(_msgSender(), amount);
     }
 
     /**
@@ -222,6 +216,12 @@ contract ZARS is ERC20, ERC20Burnable, AccessControl, Pausable, IERC20Z {
             recipients.length == amounts.length,
             "ZARS: recipients and amounts length mismatch"
         );
+
+        require(
+            recipients.length < 256,
+            "ZARS: recipients and amounts length must be less than 256"
+        );
+
         for (uint256 i = 0; i < recipients.length; i++) {
             require(
                 recipients[i] != _msgSender(),
